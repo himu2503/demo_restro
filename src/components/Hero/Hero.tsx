@@ -84,7 +84,7 @@ const Hero = () => {
             
             {/* Stylish Search Bar */}
             <div className="mb-8">
-              <div className="flex items-center gap-3 w-full max-w-3xl bg-white rounded-3xl p-2 shadow-2xl border border-neutral-light">
+              <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full max-w-3xl bg-white rounded-3xl p-2 shadow-2xl border border-neutral-light">
                 <div className="flex items-center px-3 text-neutral-dark">
                   <FiSearch size={18} />
                 </div>
@@ -95,19 +95,21 @@ const Hero = () => {
                   placeholder="Search for address, area or landmark"
                   className="flex-1 px-4 py-3 rounded-2xl text-gray-700 outline-none text-sm sm:text-base"
                 />
-                <button
-                  onClick={handleFindFood}
-                  className="ml-2 px-4 py-2 rounded-full bg-transparent border border-primary text-primary font-semibold shadow-lg hover:bg-primary hover:text-white transition-all duration-200 hover:scale-105"
-                >
-                  {searchLoading ? 'Searching...' : 'Find Food'}
-                </button>
-                <button
-                  onClick={requestLocation}
-                  className="ml-2 flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-neutral-light text-neutral-dark hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 hover:scale-105"
-                >
-                  <FiMapPin />
-                  {locLoading ? 'Locating...' : 'Use my location'}
-                </button>
+                <div className="flex flex-col sm:flex-row gap-2 lg:gap-0">
+                  <button
+                    onClick={handleFindFood}
+                    className="px-4 py-2 rounded-full bg-transparent border border-primary text-primary font-semibold shadow-lg hover:bg-primary hover:text-white transition-all duration-200 hover:scale-105"
+                  >
+                    {searchLoading ? 'Searching...' : 'Find Food'}
+                  </button>
+                  <button
+                    onClick={requestLocation}
+                    className="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-white border border-neutral-light text-neutral-dark hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 hover:scale-105"
+                  >
+                    <FiMapPin />
+                    {locLoading ? 'Locating...' : 'Use my location'}
+                  </button>
+                </div>
               </div>
 
               <div className="mt-3 flex items-center gap-3 text-sm text-neutral-dark">
