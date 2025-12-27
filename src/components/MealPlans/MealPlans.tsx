@@ -45,7 +45,7 @@ const MealPlans = ({ selectedMealType, onClose }: MealPlansProps) => {
       id: 3,
       name: "Nutrition Express",
       rating: 4.9,
-      image: "/lb-3.webp",
+      image: "/lb-3.jpg",
       description: "Balanced nutritional meals"
     },
     {
@@ -71,7 +71,7 @@ const MealPlans = ({ selectedMealType, onClose }: MealPlansProps) => {
     { day: "Thursday", meal: "Sandwich & Salad", image: "/lb-2.jpg" },
     { day: "Friday", meal: "Rice Bowl with Curry", image: "/lb-1.jpg" },
     { day: "Saturday", meal: "Continental Breakfast", image: "/lb-2.jpg" },
-    { day: "Sunday", meal: "Special Sunday Brunch", image: "/lb-3.webp" }
+    { day: "Sunday", meal: "Special Sunday Brunch", image: "/lb-3.jpg" }
   ];
 
   const handleClose = () => {

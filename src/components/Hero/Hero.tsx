@@ -1,9 +1,14 @@
 import { useState } from 'react';
+import { FiSearch, FiMapPin, FiCompass } from 'react-icons/fi';
 
 const Hero = () => {
   const [nearby, setNearby] = useState<any[] | null>(null);
   const [locLoading, setLocLoading] = useState(false);
   const [locError, setLocError] = useState<string | null>(null);
+  const [address, setAddress] = useState<string>('');
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [areaLabel, setAreaLabel] = useState<string | null>(null);
 
   const fetchNearby = async (lat: number, lng: number) => {
     try {
@@ -31,6 +36,7 @@ const Hero = () => {
       (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
+        setAreaLabel(`Near you • ${lat.toFixed(2)}, ${lng.toFixed(2)}`);
         fetchNearby(lat, lng);
       },
       (err) => {
@@ -39,6 +45,27 @@ const Hero = () => {
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
+  };
+
+  const handleFindFood = async () => {
+    if (!address || address.trim().length < 2) {
+      setSearchError('Please enter an address or area');
+      return;
+    }
+    try {
+      setSearchLoading(true);
+      setSearchError(null);
+      setNearby(null);
+      setAreaLabel(`Searching near “${address}”`);
+      const res = await fetch(`/api/restaurants?address=${encodeURIComponent(address)}&radiusKm=30`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'No results');
+      setNearby(data.restaurants || []);
+    } catch (err: any) {
+      setSearchError(err?.message || String(err));
+    } finally {
+      setSearchLoading(false);
+    }
   };
 
   return (
@@ -55,17 +82,43 @@ const Hero = () => {
               All three courses delivered right to your doorsteps.
             </p>
             
-            {/* Search Bar */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-12 bg-white rounded-2xl sm:rounded-full p-3 sm:p-2 shadow-2xl w-full max-w-full sm:max-w-2xl lg:max-w-3xl border border-neutral-light">
-              <input 
-                type="text" 
-                placeholder="Enter your delivery address" 
-                className="flex-1 px-4 sm:px-6 py-3 rounded-full w-full text-gray-700 outline-none text-sm sm:text-base"
-              />
-              <button className="w-full sm:w-auto btn btn-primary btn-large btn-press mr-2">Find Food</button>
-              <button onClick={requestLocation} className="w-full sm:w-auto btn btn-primary btn-large btn-press">
-                {locLoading ? 'Locating...' : 'Use my location'}
-              </button>
+            {/* Stylish Search Bar */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 w-full max-w-3xl bg-white rounded-3xl p-2 shadow-2xl border border-neutral-light">
+                <div className="flex items-center px-3 text-neutral-dark">
+                  <FiSearch size={18} />
+                </div>
+                <input
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  type="text"
+                  placeholder="Search for address, area or landmark"
+                  className="flex-1 px-4 py-3 rounded-2xl text-gray-700 outline-none text-sm sm:text-base"
+                />
+                <button
+                  onClick={handleFindFood}
+                  className="ml-2 px-4 py-2 rounded-full bg-transparent border border-primary text-primary font-semibold shadow-lg hover:bg-primary hover:text-white transition-all duration-200 hover:scale-105"
+                >
+                  {searchLoading ? 'Searching...' : 'Find Food'}
+                </button>
+                <button
+                  onClick={requestLocation}
+                  className="ml-2 flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-neutral-light text-neutral-dark hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 hover:scale-105"
+                >
+                  <FiMapPin />
+                  {locLoading ? 'Locating...' : 'Use my location'}
+                </button>
+              </div>
+
+              <div className="mt-3 flex items-center gap-3 text-sm text-neutral-dark">
+                <FiCompass />
+                <div>
+                  <div className="font-medium text-sm text-neutral-charcoal">{areaLabel || 'Search by address or use your location'}</div>
+                  <div className="text-xs text-muted">
+                    {searchError || locError ? <span className="text-red-600">{searchError || locError}</span> : 'We’ll show nearby restaurants and delivery estimates.'}
+                  </div>
+                </div>
+              </div>
             </div>
             {/* Nearby restaurants list */}
             <div className="mt-6 max-w-lg">
@@ -91,7 +144,7 @@ const Hero = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6 max-w-lg">
               <div className="text-center">
-                <h3 className="text-3xl md:text-4xl font-bold text-primary mb-1">150+</h3>
+                <h3 className="text-3xl md:text-4xl font-bold text-primary mb-1">750+</h3>
                 <p className="text-sm text-neutral-dark">Restaurants</p>
               </div>
               <div className="text-center">

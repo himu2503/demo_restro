@@ -22,7 +22,7 @@ const Meals = () => {
     {
       id: 3,
       title: "Dinner",
-      image: "/lb-3.webp",
+      image: "/lb-3.jpg",
       description: "End your day with satisfying dinner choices",
       time: "6:00 PM - 11:00 PM"
     }
