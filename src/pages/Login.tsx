@@ -64,7 +64,7 @@ const Login: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-white via-warm-cream to-orange-light overflow-hidden">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow">
-        <h2 className="text-2xl font-semibold mb-4">Login to LunchBox</h2>
+        <h2 className="text-2xl font-semibold mb-4">Login to Swiggy</h2>
         {error && <div className="text-sm text-red-600 mb-2">{error}</div>}
         {info && <div className="text-sm text-green-600 mb-2">{info}</div>}
 

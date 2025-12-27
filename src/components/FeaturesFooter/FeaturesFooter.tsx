@@ -8,8 +8,8 @@ const FeaturesFooter: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 id="why-choose" className="text-center text-4xl md:text-5xl font-bold mb-12 text-neutral-900">
             Why Choose{" "}
-            <span className="text-black">Lunch</span>
-            <span className="text-orange-500">Box</span>?
+            <span className="text-black">Swig</span>
+            <span className="text-orange-500">gy</span>?
           </h2>
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -80,8 +80,8 @@ const FeaturesFooter: React.FC = () => {
           <div className="mt-8 text-center text-sm text-neutral-600">
             © 2025{" "}
             <span className="font-semibold">
-              <span className="text-black">Lunch</span>
-              <span className="text-orange-500">Box</span>
+              <span className="text-black">Swig</span>
+              <span className="text-orange-500">gy</span>
             </span>
             . All rights reserved.
           </div>

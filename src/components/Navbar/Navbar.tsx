@@ -44,13 +44,13 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <img
-              src="/Lunchbox.png"
-              alt="LunchBox Logo"
+              src="/Swiggy.png"
+              alt="Swiggy Logo"
               className="w-10 h-10 object-contain hover:shadow-[0_0_15px_rgba(0,0,0,0.3)] transition-shadow duration-300 rounded-lg"
             />
             <h2 className={`text-xl md:text-2xl font-bold transition-colors ${isScrolled ? 'text-gray-900' : 'text-black'
               }`}>
-              Lunch<span className="text-primary">Box</span>
+              Swig<span className="text-primary">gy</span>
             </h2>
           </div>
 

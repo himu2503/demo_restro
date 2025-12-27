@@ -64,7 +64,7 @@ const Signup = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-white via-warm-cream to-orange-light overflow-hidden">
       <div className="w-full max-w-lg bg-gradient-to-br from-white to-[#fff7f2] p-8 rounded-2xl shadow-xl border border-transparent">
-        <h2 className="text-3xl font-bold mb-3 text-[#111827]">Create your Lunchbox account</h2>
+        <h2 className="text-3xl font-bold mb-3 text-[#111827]">Create your Swiggy account</h2>
         <p className="text-sm text-gray-600 mb-4">Sign up with your phone to get started — we'll send an OTP to verify.</p>
         {error && <div className="text-sm text-red-600 mb-2">{error}</div>}
         {info && <div className="text-sm text-green-600 mb-2">{info}</div>}
