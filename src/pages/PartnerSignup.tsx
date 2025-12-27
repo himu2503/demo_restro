@@ -12,7 +12,6 @@ const PartnerSignup: React.FC = () => {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [phone, setPhone] = useState(user?.phoneNumber || '')
   const [sections, setSections] = useState<{ breakfast: Section; lunch: Section; dinner: Section }>({
     breakfast: { price: '', meals: [] },
     lunch: { price: '', meals: [] },
@@ -20,6 +19,33 @@ const PartnerSignup: React.FC = () => {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Document uploads
+  const [docs, setDocs] = useState<Record<string, string | undefined>>({})
+
+  const handleDocFile = (key: string, file?: File) => {
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setDocs((d) => ({ ...d, [key]: String(reader.result || '') }))
+    reader.readAsDataURL(file)
+  }
+
+  const requiredDocs: { key: string; label: string; required: boolean }[] = [
+    { key: 'fssai', label: 'FSSAI License', required: true },
+    { key: 'gst', label: 'GST Registration', required: false },
+    { key: 'pan', label: 'PAN Card', required: true },
+    { key: 'owner_id', label: "Owner's ID Proof", required: true },
+    { key: 'owner_address', label: "Owner's Address Proof", required: true },
+    { key: 'premises_address', label: 'Restaurant Premises Address Proof', required: true },
+    { key: 'shop_establish', label: 'Shop and Establishment License', required: false },
+    { key: 'trade', label: 'Trade License', required: false }
+  ]
+
+  // Redirect if not logged in
+  if (!user) {
+    navigate('/login')
+    return null
+  }
 
   const addMeal = (sectionKey: keyof typeof sections) => {
     setSections((s) => ({ ...s, [sectionKey]: { ...s[sectionKey], meals: [...s[sectionKey].meals, { name: '' }] } }))
@@ -55,31 +81,11 @@ const PartnerSignup: React.FC = () => {
   }
 
   // Document uploads
-  const [docs, setDocs] = useState<Record<string, string | undefined>>({})
-
-  const handleDocFile = (key: string, file?: File) => {
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => setDocs((d) => ({ ...d, [key]: String(reader.result || '') }))
-    reader.readAsDataURL(file)
-  }
-
-  const requiredDocs: { key: string; label: string; required: boolean }[] = [
-    { key: 'fssai', label: 'FSSAI License', required: true },
-    { key: 'gst', label: 'GST Registration', required: false },
-    { key: 'pan', label: 'PAN Card', required: true },
-    { key: 'owner_id', label: "Owner's ID Proof", required: true },
-    { key: 'owner_address', label: "Owner's Address Proof", required: true },
-    { key: 'premises_address', label: 'Restaurant Premises Address Proof', required: true },
-    { key: 'shop_establish', label: 'Shop and Establishment License', required: false },
-    { key: 'trade', label: 'Trade License', required: false }
-  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     if (!name) return setError('Restaurant name is required')
-    if (!phone.match(/^\d{10}$/)) return setError('Contact phone must be exactly 10 digits')
     // validate required docs
     const missing = requiredDocs.filter((d) => d.required && !docs[d.key])
     if (missing.length > 0) return setError(`Missing required documents: ${missing.map((m) => m.label).join(', ')}`)
@@ -98,13 +104,12 @@ const PartnerSignup: React.FC = () => {
       })
 
       const payload = {
-        ownerPhone: phone,
         name,
         description,
         documents: docs,
         initialMenu
       }
-        await apiFetch('/api/partners/register-public', { method: 'POST', body: JSON.stringify(payload) })
+        await apiFetch('/api/partners/register', { method: 'POST', body: JSON.stringify(payload) })
       navigate('/')
     } catch (err: any) {
       setError(err?.message || 'server error')
@@ -124,22 +129,6 @@ const PartnerSignup: React.FC = () => {
           <div>
             <label className="block text-sm font-medium mb-1">Description</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border rounded px-3 py-2" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Contact Phone</label>
-            <div className="relative">
-              <input
-                type="tel"
-                pattern="[0-9]{10}"
-                maxLength={10}
-                value={phone}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, '').slice(0, 10)
-                  setPhone(val)
-                }}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
           </div>
 
           <div>

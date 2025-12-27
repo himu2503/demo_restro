@@ -1,17 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import type { User } from 'firebase/auth'
-import {
-  onAuthStateChanged,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signInWithPhoneNumber,
-  PhoneAuthProvider,
-  RecaptchaVerifier,
-  signInWithCredential,
-  signOut,
-  linkWithCredential,
-} from 'firebase/auth'
-import { auth } from '../firebase/setup'
+
+type User = {
+  id: string
+  phone: string
+}
 
 type AuthContextType = {
   user: User | null
@@ -26,114 +18,102 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const phoneToEmail = (phone: string) => `${phone.replace(/[^0-9]/g, '')}@phone.lunchbox`
+const API_BASE = 'http://localhost:4000/api'
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [otpPhone, setOtpPhone] = useState<string>('')
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u)
-      setLoading(false)
-    })
-    return unsub
+    const token = localStorage.getItem('token')
+    const userData = localStorage.getItem('user')
+    if (token && userData) {
+      setUser(JSON.parse(userData))
+    }
+    setLoading(false)
   }, [])
 
-  // ReCAPTCHA helpers
-  const ensureRecaptcha = (containerId = 'recaptcha-container') => {
-    if (typeof window === 'undefined') {
-      throw new Error('Recaptcha must be initialized in a browser environment')
-    }
-
-    // ensure container exists (some pages may not render the div in markup)
-    if (!document.getElementById(containerId)) {
-      const d = document.createElement('div')
-      d.id = containerId
-      // keep it invisible by default
-      d.style.display = 'none'
-      document.body.appendChild(d)
-    }
-
-    // store the verifier on window to reuse across calls
-    // @ts-ignore
-    if (!(window as any).recaptchaVerifier) {
-      // @ts-ignore
-      ;(window as any).recaptchaVerifier = new RecaptchaVerifier(containerId, { size: 'invisible' }, auth)
-      // attempt to render immediately; ignore render errors but don't silently swallow important failures
-      try {
-        ;(window as any).recaptchaVerifier.render().catch(() => {})
-      } catch (e) {
-        // render may throw synchronously in some environments; ignore here but surface later when using phone auth
-      }
-    }
-
-    // @ts-ignore
-    return (window as any).recaptchaVerifier as RecaptchaVerifier
+  const signUpWithPhoneAndPassword = async (phone: string, password: string): Promise<string> => {
+    const res = await fetch(`${API_BASE}/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, password })
+    })
+    const data = await res.json()
+    if (!data.ok) throw new Error(data.error)
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('user', JSON.stringify(data.user))
+    setUser(data.user)
+    return 'verified' // No OTP needed for password signup
   }
 
-  const signUpWithPhoneAndPassword = async (phone: string, password: string) => {
-    const email = phoneToEmail(phone)
-    await createUserWithEmailAndPassword(auth, email, password)
-    // send OTP via PhoneAuthProvider and return verificationId
-    const verifier = ensureRecaptcha('recaptcha-container')
-    const provider = new PhoneAuthProvider(auth)
-    try {
-      const verificationId = await provider.verifyPhoneNumber(phone, verifier)
-      return verificationId
-    } catch (err) {
-      // rethrow with a clearer message
-      throw new Error('Failed to send verification SMS: ' + (err as any)?.message || String(err))
-    }
+  const verifySignUpOtp = async (verificationId: string, code: string): Promise<void> => {
+    // Not used for password signup
   }
 
-  const verifySignUpOtp = async (verificationId: string, code: string) => {
-    const credential = PhoneAuthProvider.credential(verificationId, code)
-    if (auth.currentUser) {
-      await linkWithCredential(auth.currentUser, credential)
-    } else {
-      throw new Error('No signed-in user to link')
-    }
+  const loginWithPassword = async (phone: string, password: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, password })
+    })
+    const data = await res.json()
+    if (!data.ok) throw new Error(data.error)
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('user', JSON.stringify(data.user))
+    setUser(data.user)
   }
 
-  const loginWithPassword = async (phone: string, password: string) => {
-    const email = phoneToEmail(phone)
-    await signInWithEmailAndPassword(auth, email, password)
+  const sendLoginOtp = async (phone: string): Promise<string> => {
+    setOtpPhone(phone)
+    const res = await fetch(`${API_BASE}/auth/send-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    })
+    const data = await res.json()
+    if (!data.ok) throw new Error(data.error)
+    return data.verificationId
   }
 
-  const sendLoginOtp = async (phone: string) => {
-    const verifier = ensureRecaptcha('recaptcha-container-login')
-    try {
-      const confirmationResult = await signInWithPhoneNumber(auth, phone, verifier)
-      // @ts-ignore
-      return confirmationResult.verificationId || confirmationResult._verificationId
-    } catch (err) {
-      throw new Error('Failed to send OTP: ' + (err as any)?.message || String(err))
-    }
+  const verifyLoginOtp = async (verificationId: string, code: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: otpPhone, code })
+    })
+    const data = await res.json()
+    if (!data.ok) throw new Error(data.error)
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('user', JSON.stringify(data.user))
+    setUser(data.user)
   }
 
-  const verifyLoginOtp = async (verificationId: string, code: string) => {
-    const credential = PhoneAuthProvider.credential(verificationId, code)
-    await signInWithCredential(auth, credential)
-  }
-
-  const logout = async () => {
-    await signOut(auth)
+  const logout = async (): Promise<void> => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    setUser(null)
   }
 
   return (
-    <AuthContext.Provider
-      value={{ user, loading, signUpWithPhoneAndPassword, verifySignUpOtp, loginWithPassword, sendLoginOtp, verifyLoginOtp, logout }}
-    >
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      signUpWithPhoneAndPassword,
+      verifySignUpOtp,
+      loginWithPassword,
+      sendLoginOtp,
+      verifyLoginOtp,
+      logout
+    }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
 export const useAuth = () => {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
-  return ctx
+  const context = useContext(AuthContext)
+  if (!context) throw new Error('useAuth must be used within AuthProvider')
+  return context
 }
-
-export default AuthContext

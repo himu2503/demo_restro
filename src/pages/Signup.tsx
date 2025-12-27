@@ -9,8 +9,7 @@ const Signup = () => {
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
   const [loading, setLoading] = useState(false)
-  const [verificationId, setVerificationId] = useState<string | null>(null)
-  const { signUpWithPhoneAndPassword, verifySignUpOtp } = useAuth()
+  const { signUpWithPhoneAndPassword } = useAuth()
   const navigate = useNavigate()
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -29,32 +28,9 @@ const Signup = () => {
       return
     }
     try {
-      const vId = await signUpWithPhoneAndPassword(phone, password)
-      setVerificationId(vId)
-      setInfo('OTP sent. Please enter the code to verify your phone.')
-      setLoading(false)
-    } catch (err: any) {
-      setError(err.message || String(err))
-      setLoading(false)
-    }
-  }
-
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setInfo('')
-    setLoading(true)
-    const code = (e.target as any).code?.value
-    if (!verificationId || !code) {
-      setError('No verification in progress or code missing')
-      setLoading(false)
-      return
-    }
-    try {
-      await verifySignUpOtp(verificationId, code)
-      setInfo('Phone verified and linked. Redirecting...')
+      await signUpWithPhoneAndPassword(phone, password)
+      setInfo('Signup successful! You are now logged in.')
       navigate('/')
-      setLoading(false)
     } catch (err: any) {
       setError(err.message || String(err))
       setLoading(false)
@@ -64,13 +40,11 @@ const Signup = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-white via-warm-cream to-orange-light overflow-hidden">
       <div className="w-full max-w-lg bg-gradient-to-br from-white to-[#fff7f2] p-8 rounded-2xl shadow-xl border border-transparent">
-        <h2 className="text-3xl font-bold mb-3 text-[#111827]">Create your Swiggy account</h2>
-        <p className="text-sm text-gray-600 mb-4">Sign up with your phone to get started — we'll send an OTP to verify.</p>
+
         {error && <div className="text-sm text-red-600 mb-2">{error}</div>}
         {info && <div className="text-sm text-green-600 mb-2">{info}</div>}
 
-        {!verificationId ? (
-          <form onSubmit={handleSignup} className="space-y-4">
+        <form onSubmit={handleSignup} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700">Phone</label>
               <input
@@ -104,18 +78,9 @@ const Signup = () => {
               </div>
             </div>
             <button className="w-full bg-gradient-to-r from-[#ff7b00] to-[#ff6b3b] text-white py-3 rounded-xl font-semibold shadow hover:from-[#ff6b3b] hover:to-[#e55a2c] disabled:opacity-60" disabled={loading}>
-              {loading ? 'Sending…' : 'Sign up & Send OTP'}
+              {loading ? 'Signing up…' : 'Sign up'}
             </button>
           </form>
-        ) : (
-          <form onSubmit={handleVerifyCode} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Enter OTP</label>
-              <input name="code" className="w-full border border-gray-200 rounded-xl px-4 py-3" />
-            </div>
-            <button className="w-full bg-gradient-to-r from-[#ff7b00] to-[#ff6b3b] text-white py-3 rounded-xl font-semibold shadow" disabled={loading}>{loading ? 'Verifying…' : 'Verify OTP'}</button>
-          </form>
-        )}
 
         <div id="recaptcha-container" />
 
