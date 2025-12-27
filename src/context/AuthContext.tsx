@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return 'verified' // No OTP needed for password signup
   }
 
-  const verifySignUpOtp = async (verificationId: string, code: string): Promise<void> => {
+  const verifySignUpOtp = async (_verificationId: string, _code: string): Promise<void> => {
     // Not used for password signup
   }
 
@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return data.verificationId
   }
 
-  const verifyLoginOtp = async (verificationId: string, code: string): Promise<void> => {
+  const verifyLoginOtp = async (_verificationId: string, code: string): Promise<void> => {
     const res = await fetch(`${API_BASE}/auth/verify-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
