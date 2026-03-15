@@ -50,7 +50,7 @@ const Navbar = () => {
             />
             <h2 className={`text-xl md:text-2xl font-bold transition-colors ${isScrolled ? 'text-gray-900' : 'text-black'
               }`}>
-              Swig<span className="text-primary">gy</span>
+              De<span className="text-primary">mo</span>
             </h2>
           </div>
 
